@@ -626,4 +626,244 @@ Backbone's hash-based routes should however suffice for our needs.
 だたiOS/Mobile Safariではこの新しい機能において問題が報告されているため、このチュートリアルではこれを使わないことにする。
 今のところBackboneのハッシュタグベースのルートは我々のニーズを満たしている。 
 
+####Backbone.history
+
+Next, we need to initialize `Backbone.history` as it handles `hashchange` events in our application.
+This will automatically handle routes that have been defined and trigger callbacks when they've been accessed.
+次に、`hashchange`イベントを処理するために`Backbone.history`を初期化する必要がある。 これは定義されたルートを処理し、そのURLにアクセスされた際に自動的にコールバックを呼ぶものである。
+
+The `Backbone.history.start()` method will simply tell Backbone that it's OK to begin monitoring all `hashchange` events as follows:
+`Backbone.history.start()`は単にBackboneに`hashchange`を監視するように伝えるメソッドである:
+
+```javascript
+Backbone.history.start();
+Controller.saveLocation();
+```
+
+As an aside, if you would like to save application state to the URL at a particular point you can use the `.saveLocation()` method to achieve this.
+It simply updates your URL fragment without the need to trigger the `hashchange` event.
+もし特定のポイントでアプリケーションの状態を保存したいときは、`.saveLocation()`メソッドを使うことでそれを達成することができる。
+それは単純に`hashchange`イベントを発信せずに、URLフラグメントを更新するものである。
+
+
+```javascript
+/*Lets imagine we would like a specific fragment for when a user zooms into a photo*/
+zoomPhoto: function(factor){
+    this.zoom(factor); //imagine this zooms into the image
+    this.saveLocation("zoom/" + factor); //updates the fragment for us
+}
+```
+
+
+###名前空間
+
+When learning how to use Backbone, an important and commonly overlooked area by tutorials is namespacing.
+If you already have experience with namespacing in JavaScript,
+the following section will provide some advice on how to specifically apply concepts you know to Backbone,
+however I will also be covering explanations for beginners to ensure everyone is on the same page.
+Backboneの使い方を学ぶ際に、多くのチュートリアルでよく見過ごされているのは名前空間である。
+もしJavaScriptにおける名前空間を使った経験がある場合は、次の節でその概念をBackboneに応用する方法を説明したいと思うが、初心者の方々も同じ理解度が得られるように基本的な説明も加えたいと思う。
+
+####名前空間とは何か？
+
+The basic idea around namespacing is to avoid collisions with other objects or variables in the global namespace.
+They're important as it's best to safeguard your code from breaking in the event of another script on the page using the same variable names as you are.
+As a good 'citizen' of the global namespace, it's also imperative that you do your best to similarly not prevent other developer's scripts executing due to the same issues.
+名前空間の基本的な目的は、グローバル空間での他のオブジェクトや変数との衝突を防ぐことにある。
+こうすることで同じページ内に読み込まれた他のスクリプトが同じ変数名を持っていた場合でもコードを停止させること無く実行させることができる。
+同様に、他のデベロッパのスクリプトを停止することを防ぐためにもこの概念が非常に重要となる。
+
+
+JavaScript doesn't really have built-in support for namespaces like other languages, however it does have closures which can be used to achieve a similar effect.
+JavaScriptは他の言語のように、名前空間をネイティブにサポートしていないが、同様の効果を得るためにclosureを使うことができる。
+
+In this section we'll be taking a look shortly at some examples of how you can namespace your models, views, routers and other components specifically. 
+The patterns we'll be examining are:
+この節では、Model, View, Routerやその他のコンポーネントの名前空間を定義する方法を説明していく。このパターンでは以下のことを検証???
+
+* 一つのグローバル変数
+* オブジェクトリテラル
+* ネストされた名前空間
+
+**一つのグローバル変数**
+
+One popular pattern for namespacing in JavaScript is opting for a single global variable as your primary object of reference.
+A skeleton implementation of this where we return an object with functions and properties can be found below:
+JavaScriptでよく用いられる名前空間パターンは主要なオブジェクトとして一つのグローバル変数を選ぶ方法である。
+関数とプロパティを持つオブジェクトを返すスケルトン実装を以下に示す。
+
+```javascript
+var myApplication =  (function(){ 
+        function(){
+            ...
+        },
+        return{
+            ...
+        }
+})();
+```
+
+which you're likely to have seen before. A Backbone-specific example which may be more useful is:
+これは今までに見たことあると思う。Backboneに応用した例は以下のようになる:
+
+```javascript
+var myViews = (function(){
+    return {
+        PhotoView: Backbone.View.extend({ .. }),
+        GalleryView: Backbone.View.extend({ .. }),
+        AboutView: Backbone.View.extend({ .. });
+        //etc.
+    };
+})();
+```
+
+Here we can return a set of views or even an entire collection of models, views and routers depending on how you decide to structure your application.
+Although this works for certain situations, the biggest challenge with the single global variable pattern is ensuring that no one else has used the same global variable name as you have in the page.
+これはある特定の状況ではうまくいくかもしれないが、このパターンの最も大きな課題は他の誰もが同じグローバル変数名を使っていないことを保証しなくてはいけないことである。
+
+One solution to this problem, as mentioned by Peter Michaux, is to use prefix namespacing.
+It's a simple concept at heart, but the idea is you select a basic prefix namespace you wish to use (in this example, `myApplication_`) and then define any methods,
+variables or other objects after the prefix.
+この問題に対する一つの対応策として、Peter Michauxが提案した、接頭辞をつけた名前空間を使う方法である。
+これは非常にシンプルな概念であるが、基本的な接頭辞(この例では`myApplication_`)を選び、そしてメソッド、変数そしてその他のオブジェクトそその接頭辞の後に宣言する。
+
+```javascript
+var myApplication_photoView = Backbone.View.extend({}),
+myApplication_galleryView = Backbone.View.extend({});
+```
+
+This is effective from the perspective of trying to lower the chances of a particular variable existing in the global scope,
+but remember that a uniquely named object can have the same effect.
+This aside, the biggest issue with the pattern is that it can result in a large number of global objects once your application starts to grow.
+これは特定の変数がグローバル空間に存在する確率を低くする点では効果的であるが、これもまたユニークに宣言されたオブジェクトそのものと同様の効果でしかない。
+
+For more on Peter's views about the single global variable pattern, read his [excellent post on them]().
+一つのグローバル変数パターンにおけるPeter氏の考察をより良く知りたい方は、彼のすばらしい[記事](http://michaux.ca/articles/javascript-namespacing)を読んでいただきたい。
+
+Note: There are several other variations on the single global variable pattern out in the wild, however having reviewed quite a few, I felt these applied best to Backbone.
+注意: 他にもこのシングルグローバル変数パターンの種類が示されているが、いくつかのものをレビューした結果これが一番Backboneに合っていると考えた。
+
+**オブジェクトリテラル**
+Object Literals have the advantage of not polluting the global namespace but assist in organizing code and parameters logically. 
+They're beneficial if you wish to create easily-readable structures that can be expanded to support deep nesting. 
+Unlike simple global variables, Object Literals often also take into account tests
+for the existence of a variable by the same name so the chances of collision occurring are significantly reduced.
+オブジェクトリテラルはグローバル空間を散らかさずに維持できるという利点に加え、論理的にコードとパラメータを整理するのを助けてくれる。
+もし深くネスティングでき、読みやすい構造を作りたい場合は、このパターンは適している。
+シンプルなグローバル変数とは違い、オブジェクトリテラルパターンは変数名の衝突を防ぐために、その変数名が存在しないかどうかのテストも考慮に入れる必要がある。
+
+The code at the very top of the next sample demonstrates the different ways in which you can check to see if a namespace already exists before defining it.  I commonly use Option 3.
+次のサンプルの一番上のものは、定義する前に名前空間が既に存在していないかどうかのチェックのバリエーションを示している。個人的にはOption3をよく使っている。
+
+
+```javascript
+/*Doesn't check for existence of myApplication*/
+var myApplication = {};
+ 
+/*
+Does check for existence. If already defined, we use that instance.
+Option 1:   if(!MyApplication) MyApplication = {};
+Option 2:   var myApplication = myApplication = myApplication || {}
+Option 3:   var myApplication = myApplication || {};
+We can then populate our object literal to support models, views and collections (or any data, really):
+*/
+ 
+var myApplication = {
+    models : {},
+    views : {
+        pages : {}
+    },
+    collections : {}
+};
+```
+
+One can also opt for adding properties directly to the namespace (such as your views, in the following example):
+名前空間に直接プロパティを追加することも可能である:
+
+```javascript
+var myGalleryViews = myGalleryViews || {};
+myGalleryViews.photoView = Backbone.View.extend({});
+myGalleryViews.galleryView = Backbone.View.extend({});
+```
+
+The benefit of this pattern is that you're able to easily encapsulate all of your models, views, routers etc. in a way 
+that clearly separates them and provides a solid foundation for extending your code.
+このパターンの便利な点は、model, views, routersなどすべてをカプセル化することができるため、明確にそれらを分けることができコードを拡張する際の基礎を提供してくれる点である。
+
+This pattern has a number of useful applications.
+It's often of benefit to decouple the default configuration for your application into a single area that can be easily modified
+without the need to search through your entire codebase just to alter them - Object Literals work great for this purpose.
+Here's an example of a hypothetical Object Literal for configuration:
+このパターンはいくつかの便利な使い方がある。デフォルトの構成を???
+オブジェクトリテラルはこの目的に最適である。仮定のオブジェクトリテラルの構成はこのように示すことができる:
+
+```javascript
+var myConfig = {
+    language: 'english',
+    defaults: {
+        enableGeolocation: true,
+        enableSharing: false,
+        maxPhotos: 20
+    },
+    theme: {
+        skin: 'a',
+        toolbars: {
+            index: 'ui-navigation-toolbar',
+            pages: 'ui-custom-toolbar'    
+        }
+    }
+}
+```
+
+Note that there are really only minor syntactical differences between the Object Literal pattern and a standard JSON data set.
+If for any reason you wish to use JSON for storing your configurations instead (e.g. for simpler storage when sending to the back-end), feel free to.
+オブジェクトリテラルと標準のJSONデータセットの書き方上の唯一の小さな違いがいくつか存在するが、もし構成を保存するため(例えばバックエンドに送るためのシンプルなストレージ)にJSONを使いたい場合は、そちらを使っても構わない。
+
+For more on the Object Literal pattern, I recommend reading Rebecca Murphey's [excellent article on the topic](http://blog.rebeccamurphey.com/2009/10/15/using-objects-to-organize-your-code).
+オブジェクトリテラルパターンにおいて、もっと知りたい場合はRebecca Murpheyの[このトピックにおける記事](http://blog.rebeccamurphey.com/2009/10/15/using-objects-to-organize-your-code)を読むことをお勧めする.
+
+
+**Nested namespacing**
+
+An extension of the Object Literal pattern is nested namespacing. It's another common pattern used that offers a lower risk of collision due to the fact that even if a namespace already exists, it's unlikely the same nested children do.
+
+Does this look familiar?
+
+```javascript
+YAHOO.util.Dom.getElementsByClassName('test');
+```
+
+Yahoo's YUI uses the nested object namespacing pattern regularly and even DocumentCloud (the creators of Backbone) use the nested namespacing pattern in their main applications. A sample implementation of nested namespacing with Backbone may look like this:
+
+```javascript
+var galleryApp =  galleryApp || {};
+ 
+/*perform similar check for nested children*/
+galleryApp.routers = galleryApp.routers || {};
+galleryApp.model = galleryApp.model || {};
+galleryApp.model.special = galleryApp.model.special || {};
+ 
+/*routers*/
+galleryApp.routers.Workspace   = Backbone.Router.extend({}); 
+galleryApp.routers.PhotoSearch = Backbone.Router.extend({}); 
+ 
+/*models*/
+galleryApp.model.Photo      = Backbone.Model.extend({}); 
+galleryApp.model.Comment = Backbone.Model.extend({}); 
+ 
+/*special models*/
+galleryApp.model.special.Admin = Backbone.Model.extend({});
+```
+
+This is both readable, organized and is a relatively safe way of namespacing your Backbone application in a similar fashion to what you may be used to in other languages.
+
+The only real caveat however is that it requires your browser's JavaScript engine first locating the galleryApp object and then digging down until it gets to the function you actually wish to use.
+
+This can mean an increased amount of work to perform lookups, however developers such as Juriy Zaytsev (kangax) have previously tested and found the performance differences between single object namespacing vs the 'nested' approach to be quite negligible.
+
+**Recommendation**
+
+Reviewing the namespace patterns above, the option that I would personally use with Backbone is nested object namespacing with the object literal pattern.
+
+Single global variables may work fine for applications that are relatively trivial, however, larger codebases requiring both namespaces and deep sub-namespaces require a succinct solution that promotes readability and scales. I feel this pattern achieves all of these objectives well and is a perfect companion for Backbone development.
 
