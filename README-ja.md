@@ -506,3 +506,124 @@ PhotoCollection.reset([
   {title: "The flight from Scotland", src: "long-flight.jpg"},
   {title: "Latest snap of lock-ness", src: "lockness.jpg"}]);
 ```
+
+###Underscoreのユーティリティ関数
+
+As Backbone requires Underscore as a hard dependency,
+we're able to use many of the utilities it has to offer to aid with our application development.
+Here's an example of how Underscore's `sortBy()` method can be used to sort a collection of photos based on a particular attribute.
+BackboneはUnderscoreと強い依存関係を持つため,アプリケーション開発を援助してくれる多くのユーティリティを使うことができる。
+以下の例では、Underscoreの`sortBy()`メソッドを用いて特定の属性を元にPhotoCollectionをソートする例を示す:
+
+```javascript
+var sortedByAlphabet = PhotoCollection.sortBy(function(photo)){
+    return photo.get("title").toLowerCase();
+});
+```
+The complete list of what it can do is beyond the scope of this guide, but can be found in the official docs.
+Underscoreのユーティリティをすべてカバーすることはこの本の範囲外であるため、公式のドキュメンテーションを参照してもらいたい。
+
+###Routers
+
+In Backbone, routers are used to handle routing for your application.
+This is achieved using hash-tags with URL fragments which you can read more about if you wish. Some examples of valid routes may be seen below:
+BackboneではRoutersはアプリケーションのルーティングに用いられる。これはハッシュタグを用いたURLフラグメントで達成される。以下にrouteの例を示す:
+
+```javascript
+http://unicorns.com/#/whatsup
+http://unicorns.com/#/search/seasonal-horns/page2
+```
+
+Note: A router will usually have at least one URL route defined as well as a function that maps what happens when you reach that particular route.  This type of key/value pair may resemble:
+注意: Routerは少なくとも一つのURLとそのURLにアクセスされた際に呼ばれる関数が定義されている必要がある。このタイプのkey/valueペアは似ている
+
+```javascript
+"/route" : "mappedFunction"
+```
+
+Let us now define our first controller by extending `Backbone.Router`.
+For the purposes of this guide, we're going to continue pretending we're creating a photo gallery application that requires a GalleryRouter.
+`Backbone.Router`をextendして最初のコントローラを定義してみよう。
+フォトギャラリーアプリケーションを作っていると仮定して、GalleryRouterを定義をする。
+
+
+Note the inline comments in the code example below as they continue the rest of the lesson on routers.
+注意:以下の例のコードのインラインコメントは???
+
+```javascript
+GalleryRouter = Backbone.Router.extend({
+    /* define the route and function maps for this router */
+    routes:{
+        "/about" : "showAbout",
+        /*Sample usage: http://unicorns.com/#/about"*/
+        
+        "/photos/:id" : "getPhoto",
+        /*This is an example of using a ":param" variable which allows us to match 
+        any of the components between two URL slashes*/
+        /*Sample usage: http://unicorns.com/#/photos/5*/
+        
+        "/search/:query" : "searchPhotos"
+        /*We can also define multiple routes that are bound to the same map function,
+        in this case searchPhotos(). Note below how we're optionally passing in a 
+        reference to a page number if one is supplied*/
+        /*Sample usage: http://unicorns.com/#/search/lolcats*/
+         
+        "/search/:query/p:page" : "searchPhotos",
+        /*As we can see, URLs may contain as many ":param"s as we wish*/
+        /*Sample usage: http://unicorns.com/#/search/lolcats/p1*/
+        
+        "/photos/:id/download/*imagePath" : "downloadPhoto",
+        /*This is an example of using a *splat. splats are able to match any number of 
+        URL components and can be combined with ":param"s*/
+        /*Sample usage: http://unicorns.com/#/photos/5/download/files/lolcat-car.jpg*/
+        
+        /*If you wish to use splats for anything beyond default routing, it's probably a good 
+        idea to leave them at the end of a URL otherwise you may need to apply regular
+        expression parsing on your fragment*/
+         
+        "*other"    : "defaultRoute"
+        //This is a default route with that also uses a *splat. Consider the
+        //default route a wildcard for URLs that are either not matched or where
+        //the user has incorrectly typed in a route path manually
+        /*Sample usage: http://unicorns.com/#/anything*/
+ 
+    },
+    
+    showAbout: function(){
+    },
+    
+    getPhoto: function(id){
+        /* 
+        in this case, the id matched in the above route will be passed through
+        to our function getPhoto and we can then use this as we please.
+        */
+        console.log("You are trying to reach photo " + id);
+    },
+    
+    searchPhotos: function(query, page){
+        console.log("Page number: " + page + " of the results for " + query);
+    },
+    
+    downloadPhoto: function(id, path){
+    },
+    
+    defaultRoute(other){
+        console.log("Invalid. You attempted to reach:" + other);
+    }
+});
+ 
+/* Now that we have a router setup, remember to instantiate it*/
+ 
+var myGalleryRouter = new GalleryRouter;
+```
+
+Note: In Backbone 0.5+, it's possible to opt-in for HTML5 pushState support via `window.history.pushState`. 
+This effectively permits non-hashtag routes such as http://www.scriptjunkie.com/just/an/example to be supported with automatic degradation should your browser not support it.
+For the purposes of this tutorial, we won't be relying on this newer functionality as there have been reports about issues with it under iOS/Mobile Safari.
+Backbone's hash-based routes should however suffice for our needs.
+注意: Backbone 0.5以上では、HTML5の`window.history.pushState`をサポートしている。
+これによってhttp://www.scriptjunkie.com/just/an/exampleのようなハッシュタグを用いないルーティングをサポートでき、ブラウザがpushStateをサポートしていない場合は自動的にハッシュタグのルーティングに変更される。
+だたiOS/Mobile Safariではこの新しい機能において問題が報告されているため、このチュートリアルではこれを使わないことにする。
+今のところBackboneのハッシュタグベースのルートは我々のニーズを満たしている。 
+
+
