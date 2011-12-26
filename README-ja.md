@@ -823,17 +823,21 @@ For more on the Object Literal pattern, I recommend reading Rebecca Murphey's [e
 オブジェクトリテラルパターンにおいて、もっと知りたい場合はRebecca Murpheyの[このトピックにおける記事](http://blog.rebeccamurphey.com/2009/10/15/using-objects-to-organize-your-code)を読むことをお勧めする.
 
 
-**Nested namespacing**
-
-An extension of the Object Literal pattern is nested namespacing. It's another common pattern used that offers a lower risk of collision due to the fact that even if a namespace already exists, it's unlikely the same nested children do.
+**ネストされた名前空間**
+An extension of the Object Literal pattern is nested namespacing.
+It's another common pattern used that offers a lower risk of collision due to the fact that even if a namespace already exists, it's unlikely the same nested children do.
+オブジェクトリテラルの拡張版としてのパターンはネストされた名前空間のパターンである。
+これは、もし名前空間が既に存在していたとしても同じネストされた子要素が存在することはあまり無いため、衝突の可能性をより低くすることができる。
 
 Does this look familiar?
+このパターンは見たこと無いだろうか？
 
 ```javascript
 YAHOO.util.Dom.getElementsByClassName('test');
 ```
 
 Yahoo's YUI uses the nested object namespacing pattern regularly and even DocumentCloud (the creators of Backbone) use the nested namespacing pattern in their main applications. A sample implementation of nested namespacing with Backbone may look like this:
+YahooのYUIはこのネストされたオブジェクトの名前空間パターンを適用しており、DocumentCloud(Backboneの生みの親)もこのネストされた名前空間パターンを彼らのメインのアプリケーションに用いている。Backboneでのネストされた名前空間の実装サンプルは次のようである:
 
 ```javascript
 var galleryApp =  galleryApp || {};
@@ -856,14 +860,60 @@ galleryApp.model.special.Admin = Backbone.Model.extend({});
 ```
 
 This is both readable, organized and is a relatively safe way of namespacing your Backbone application in a similar fashion to what you may be used to in other languages.
+これは、読みやすいと同時に整理されており、比較的安全にBackboneアプリケーションの名前空間を他の言語と同様の方法で定義することができる。
 
-The only real caveat however is that it requires your browser's JavaScript engine first locating the galleryApp object and then digging down until it gets to the function you actually wish to use.
+The only real caveat however is that it requires your browser's JavaScript engine first locating the galleryApp object and 
+then digging down until it gets to the function you actually wish to use.
+このパターンの唯一の欠点はブラウザのJavaScriptエンジンが最初にgalleryAppオブジェクトを見つけ、実際に使いたい関数にたどり着くまで深くたどっていくことで、検索するのに仕事量を増やしてしまうことである。
 
 This can mean an increased amount of work to perform lookups, however developers such as Juriy Zaytsev (kangax) have previously tested and found the performance differences between single object namespacing vs the 'nested' approach to be quite negligible.
+しかしJuriy Zaytsev(kangax)氏などのデベロッパはかつてテストを行い、ネストされていない名前空間と、ネストされたもののパフォーマンスの差は無視できるほど小さなものだと検証した。
 
-**Recommendation**
+
+**推奨**
 
 Reviewing the namespace patterns above, the option that I would personally use with Backbone is nested object namespacing with the object literal pattern.
+上の名前空間パターンをレビューしてみると、個人的に私がBackboneでよく使うのは、オブジェクトリテラルパターンとオブジェクトネストされた名前空間の組み合わせのオプションである。
 
-Single global variables may work fine for applications that are relatively trivial, however, larger codebases requiring both namespaces and deep sub-namespaces require a succinct solution that promotes readability and scales. I feel this pattern achieves all of these objectives well and is a perfect companion for Backbone development.
+Single global variables may work fine for applications that are relatively trivial, however,
+larger codebases requiring both namespaces and deep sub-namespaces require a succinct solution that promotes readability and scales.
+I feel this pattern achieves all of these objectives well and is a perfect companion for Backbone development.
+シングルグローバル変数は小規模なアプリケーションには機能するかもしれないが、大規模なコードベースのアプリケーションには名前空間と深いサブ名前空間の二つを同時に使うことが
+可読性と拡張性を維持するためには必要となってくる。
+私はこのパターンはこれらの目的を達成するのに十分であり、かつBackboneを用いての開発の際にも完璧な組み合わせであると考えている。
 
+###Additional Tips
+### 他のヒント
+
+####Automated Backbone Scaffolding
+#### Backboneの自動Scaffolding
+Scaffolding can assist in expediting how quickly you can begin a new application by creating the basic files required for a project automatically.
+If you enjoy the idea of automated MVC scaffolding using Backbone, I'm happy to recommend checking out a tool called Brunch.
+Scaffoldingはプロジェクトに必要な基本的なファイル群を自動的に準備することで新しいアプリケーションを迅速に始めることをアシストしてくれる。
+Backboneを用いて自動的なMVCのScaffoldingをしたい場合は、Brunchと呼ばれるツールを一目見ていただきたい。
+
+It works very well with Backbone, Underscore, jQuery and CoffeeScript and is even used by companies such as Red Bull and Jim Bean.
+You may have to update any third party dependencies (e.g. latest jQuery or Zepto) when using it, but other than that it should be fairly stable to use right out of the box.
+それは、Backbone, Underscore, jQueryとCoffeeScriptなどと非常に相性がよく、Red BullやJim Beanなどの会社でも使われている。 サードパーティ(jQueryやZepto)の依存関係などはアップデートが必要かもしれないが、それを除けば非常に安定的に使うことができる。
+
+
+####Clarifications on Backbone's MVC
+
+As Thomas Davis has previously noted, Backbone.js's MVC is a loose interpretation of traditional MVC, something common to many client-side MVC solutions. Backbone's views are what could be considered a wrapper for templating solutions such as the Mustache.js and `Backbone.View` is the equivalent of a controller in traditional MVC. `Backbone.Model` is however the same as a classical 'model'.
+Thomas Davis氏が以前に指摘しているように、Backbone.jsのMVCは、多くのクライアントサイドMVCのソリューションに共通する従来のMVCの緩い解釈にちかいものだと言える。BackboneのViewは、Mustache.jsなどのテンプレーティングのラッパーとして捉えられ、従来のMVCのコントローラに相当するものである。 また一方で、`Backbone.Model`は従来の"モデル"と同じだといえる。
+
+Whilst Backbone is not the only client-side MVC solution that could use some improvements in it's naming conventions, `Backbone.Controller` was probably the most central source of some confusion but has been renamed a router in more recent versions. This won't prevent you from using Backbone effectively, however this is being pointed out just to help avoid any confusion if for any reason you opt to use an older version of the framework.
+
+The official Backbone docs do attempt to clarify that their routers aren't really the C in MVC, but it's important to understand where these fit rather than considering client-side MVC a 1:1 equivalent to the pattern you've probably seen in server-side development.
+
+####Is there a limit to the number of routers I should be using?
+
+Andrew de Andrade has pointed out that DocumentCloud themselves usually only use a single controller in most of their applications. You're very likely to not require more than one or two routers in your own projects as the majority of your application routing can be kept organized in a single controller without it getting unwieldy.
+
+####Is Backbone too small for my application's needs?
+
+If you find yourself unsure of whether or not your application is too large to use Backbone, I recommend reading my post on building large-scale jQuery & JavaScript applications or reviewing my slides on client-side MVC architecture options. In both, I cover alternative solutions and my thoughts on the suitability of current MVC solutions for scaled application development.
+
+Backbone can be used for building both trivial and complex applications as demonstrated by the many examples Ashkenas has been referencing in the Backbone documentation. As with any MVC framework however, it's important to dedicate time towards planning out what models and views your application really needs. Diving straight into development without doing this can result in either spaghetti code or a large refactor later on and it's best to avoid this where possible.
+
+At the end of the day, the key to building large applications is not to build large applications in the first place. If you however find Backbone doesn't cut it for your requirements I strongly recommend checking out JavaScriptMVC or SproutCore as these both offer a little more than Backbone out of the box. Dojo and Dojo Mobile may also be of interest as these have also been used to build significantly complex apps by other developers.
