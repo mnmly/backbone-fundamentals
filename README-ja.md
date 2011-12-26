@@ -940,3 +940,41 @@ Dojo and Dojo Mobile may also be of interest as these have also been used to bui
 最終的には、大規模なアプリケーションを構築する上で大切なことは、最初から大規模なものを作ろうとしないことである。
 もしBackboneがあなたの用件に合わなかった場合は、JavaScriptMVCやSproutCoreをチェックすることをお勧めする。両方のフレームワークはともにBackboneより多くの機能を初期段階から提供してくれる。
 DojoとDojo Mobileも、他のデベロッパによって多くの複雑なアプリケーションを構築するのに使用されているため、選択肢としておいておくのもいいかもしれない。
+
+
+##Modular JavaScript
+
+When we say an application is modular, we generally mean it's composed of a set of highly decoupled, distinct pieces of functionality stored in modules. As you probably know, loose coupling facilitates easier maintainability of apps by removing dependencies where possible. When this is implemented efficiently, its quite easy to see how changes to one part of a system may affect another.
+アプリケーションがモジュラーであると言うとき、我々は一般的にそれが機能が高度に分離され、異なる要素のセットで構成されていてモジュールとしてまとめられている状態を意味する。ご存知のように、ルーズカップリングは可能な限り依存関係を無くすことで、アプリケーションの管理を容易にしてくれる。これが効率的に実装されている場合、システム一部への変更がシステムの別の部分にどんな影響を与えるかを一目で見ることができる。
+
+Unlike some more traditional programming languages however, the current iteration of JavaScript (ECMA-262) doesn't provide developers with the means to import such modules of code in a clean, organized manner. 
+It's one of the concerns with specifications that haven't required great thought until more recent years where the need for more organized JavaScript applications became apparent.
+しかし、いくつかのより伝統的なプログラミング言語とは異なり、現行のJavaScript(ECMA - 262)には、きちんと整理された形でコードモジュールをインポートする方法はまだ存在していない。
+現在、より組織化されたJavaScriptアプリケーションの必要性が明らかになった以上、これに関わるJavaScriptの仕様は懸念事項の一つとなっている。
+
+Instead, developers at present are left to fall back on variations of the module or object literal patterns.
+With many of these, module scripts are strung together in the DOM with namespaces being described by a single global object where it's still possible to incur naming collisions in your architecture. There's also no clean way to handle dependency management without some manual effort or third party tools.
+その代わりに、モジュールまたはオブジェクトリテラルパターンのバリエーションの対処方法は現在のデベロッパに委ねられている。 これらの多くで、モジュールのスクリプトは、アーキテクチャ内で名前の衝突の可能性を未だに持っているシングルグローバルオブジェクトによって作られた名前空間とDOMでつなぎ合わされている。 サードパーティのツールや何かしら手も加えずにかの依存関係の管理を処理する簡単な方法はまだありません。
+
+Whilst native solutions to these problems will be arriving in ES Harmony, the good news is that writing modular JavaScript has never been easier and you can start doing it today.
+ES Harmonyにはこのような課題に対するソリューションが提供される一方で、モジュラーなJavaScriptを書くことは簡単に今日からすぐに始めることができる。
+
+In this next part of the book, we're going to look at how to use AMD modules and RequireJS for cleanly wrapping units of code in your application into managable modules.
+次のパートでは、AMDモジュールの使い方やRequireJSを使ってどのようにアプリケーションを管理しやすいモジュールにまとめるかを解説していきたいとおもう。
+
+
+##Organizing modules with RequireJS and AMD
+
+In case you haven't used it before, RequireJS is a popular script loader written by James Burke - a developer who has been quite instrumental in helping shape the AMD module format, which we'll discuss more shortly. Some of RequireJS's capabilities include helping to load multiple script files, helping define modules with or without dependencies and loading in non-script dependencies such as text files.
+
+So, why use RequireJS with Backbone? Although Backbone is excellent when it comes to providing a sanitary structure to your applications, there are a few key areas where some additional help could be used:
+
+1) Backbone doesn't endorse a particular approach to modular-development. Although this means it's quite open-ended for developers to opt for classical patterns like the module-pattern or Object Literals for structuring their apps (which both work fine), it also means developers aren't sure of what works best when other concerns come into play, such as dependency management.
+
+RequireJS is compatible with the AMD (Asynchronous Module Definition) format, a format which was born from a desire to write something better than the 'write lots of script tags with implicit dependencies and manage them manually' approach to development. In addition to allowing you to clearly declare dependencies, AMD works well in the browser, supports string IDs for dependencies, declaring multiple modules in the same file and gives you easy-to-use tools to avoid polluting the global namespace.
+
+2) Let's discuss dependency management a little more as it can actually be quite challenging to get right if you're doing it by hand. When we write modules in JavaScript, we ideally want to be able to handle the reuse of code units intelligently and sometimes this will mean pulling in other modules at run-time whilst at other times you may want to do this dynamically to avoid a large pay-load when the user first hits your application.
+
+Think about the GMail web-client for a moment. When users initially load up the page on their first visit, Google can simply hide widgets such as the chat module until a user has indicated (by clicking 'expand') that they wish to use it. Through dynamic dependency loading, Google could load up the chat module only then, rather than forcing all users to load it when the page first initializes. This can improve performance and load times and can definitely prove useful when building larger applications.
+
+I've previously written [a detailed article](http://addyosmani.com/writing-modular-js) covering both AMD and other module formats and script loaders in case you'd like to explore this topic further. The takeaway is that although it's perfectly fine to develop applications without a script loader or clean module format in place, it can be of significant benefit to consider using these tools in your application development.
