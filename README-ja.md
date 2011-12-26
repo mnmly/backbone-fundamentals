@@ -902,9 +902,14 @@ You may have to update any third party dependencies (e.g. latest jQuery or Zepto
 As Thomas Davis has previously noted, Backbone.js's MVC is a loose interpretation of traditional MVC, something common to many client-side MVC solutions. Backbone's views are what could be considered a wrapper for templating solutions such as the Mustache.js and `Backbone.View` is the equivalent of a controller in traditional MVC. `Backbone.Model` is however the same as a classical 'model'.
 Thomas Davis氏が以前に指摘しているように、Backbone.jsのMVCは、多くのクライアントサイドMVCのソリューションに共通する従来のMVCの緩い解釈にちかいものだと言える。BackboneのViewは、Mustache.jsなどのテンプレーティングのラッパーとして捉えられ、従来のMVCのコントローラに相当するものである。 また一方で、`Backbone.Model`は従来の"モデル"と同じだといえる。
 
-Whilst Backbone is not the only client-side MVC solution that could use some improvements in it's naming conventions, `Backbone.Controller` was probably the most central source of some confusion but has been renamed a router in more recent versions. This won't prevent you from using Backbone effectively, however this is being pointed out just to help avoid any confusion if for any reason you opt to use an older version of the framework.
+Whilst Backbone is not the only client-side MVC solution that could use some improvements in it's naming conventions, `Backbone.Controller` was probably the most central source of some confusion but has been renamed a router in more recent versions.
+This won't prevent you from using Backbone effectively, however this is being pointed out just to help avoid any confusion if for any reason you opt to use an older version of the framework.
+Backboneが命名規則にいくつかの改善点を用いることができる唯一のクライアントサイドMVCのソリューションでは無く、`Backbone.Controller`は中でも混乱をもたらす原因となっていたが最近のバージョンではそれがRouterと名前を変更された。
+だからといってBackboneを??? しかしこれはもし何らかの形で古いバージョンのBackboneを使う場合のために、混乱を避けるために指摘されます。???
 
-The official Backbone docs do attempt to clarify that their routers aren't really the C in MVC, but it's important to understand where these fit rather than considering client-side MVC a 1:1 equivalent to the pattern you've probably seen in server-side development.
+The official Backbone docs do attempt to clarify that their routers aren't really the C in MVC,
+but it's important to understand where these fit rather than considering client-side MVC a 1:1 equivalent to the pattern you've probably seen in server-side development.
+公式のBackboneのドキュメンテーションは明確にRouterがMVCのCにはあたらないと説明していますが、それはクライアントサイドのMVCとサーバサイド開発のそのパターンが1:1で対応しているものではないということを理解しなくてはいけない。
 
 ####Is there a limit to the number of routers I should be using?
 
