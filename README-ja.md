@@ -173,3 +173,336 @@ console.log(myAttributes);
              location: "Boston", 
              tags:['the big game', 'vacation']}*/
 ```
+
+####Model.set()
+
+`Model.set()` allows us to pass attributes into an instance of our model. Attributes can either be set during initialization or later on.
+`Model.set()`を用いることでModelのインスタンスに値を与えることができる。属性は初期化時とその後にも設定することが可能である。
+
+```javascript
+Photo = Backbone.Model.extend({
+    initialize: function(){
+        console.log('this model has been initialized');
+    }
+});
+ 
+/*Setting the value of attributes via instantiation*/
+var myPhoto = new Photo({ title: 'My awesome photo', location: 'Boston' });
+ 
+var myPhoto2 = new Photo();
+
+/*Setting the value of attributes through Model.set()*/
+myPhoto2.set({ title:'Vacation in Florida', location: 'Florida' });
+```
+
+**Default values**
+**デフォルト値**
+
+There are times when you want your model to have a set of default values (e.g. in a scenario where a complete set of data isn't provided by the user).  This can be set using a property called `defaults` in your model.
+Modelにデフォルト値をセットしたい場合も出てくる。(例えば、ユーザからのデータが完璧に設定されない場合) その場合は、Model内の`defaults`プロパティを用いることでそれを設定することができる。
+
+```javascript
+Photo = Backbone.Model.extend({
+    defaults:{
+        title: 'Another photo!',
+        tags:  ['untagged'],
+        location: 'home',
+        src: 'placeholder.jpg'
+    },
+    initialize: function(){
+    }
+});
+ 
+var myPhoto = new Photo({ location: "Boston", 
+                          tags:['the big game', 'vacation']}),
+    title   = myPhoto.get("title"), //Another photo!
+    location = myPhoto.get("location"), //Boston
+    tags = myPhoto.get("tags"), // ['the big game','vacation']
+    photoSrc = myPhoto.get("src"); //placeholder.jpg
+```
+
+**モデルへの変更を監視する**
+
+Any and all of the attributes in a Backbone model can have listeners bound to them which detect when their values change.
+This can be easily added to the `initialize()` function as follows:
+BackboneのModelのすべての属性に対してその値が変化した際のイベントにバインドすることができる。これは`initialize()`で以下のように追加することができる。
+
+```javascript
+this.bind('change', function(){
+    console.log('values for this model have changed');
+});
+```
+
+In the following example, we can also log a message whenever a specific attribute (the title of our Photo model) is altered.
+以下の例では、特定の属性(Photo Modelのtitle)が変化した際にメッセージをログしている。
+
+```javascript
+Photo = Backbone.Model.extend({
+    defaults:{
+        title: 'Another photo!',
+        tags:  ['untagged'],
+        location: 'home',
+        src: 'placeholder.jpg'
+    },
+    initialize: function(){
+        console.log('this model has been initialized');
+        this.bind("change:title", function(){
+            var title = this.get("title");
+            console.log("My title has been changed to.." + title);
+        });
+    },
+    
+    setTitle: function(newTitle){
+        this.set({ title: newTitle });
+    }
+});
+ 
+var myPhoto = new Photo({ title:"Fishing at the lake", src:"fishing.jpg")});
+myPhoto.setTitle('Fishing at sea'); 
+//logs my title has been changed to.. Fishing at sea
+```
+
+**バリデーション**
+
+Backbone supports model validation through `Model.validate()`, which allows checking the attribute values for a model prior to them being set.
+Backboneでは`Model.validate()`を用いてバリデーションをかけることができ、モデルに値が設定される前にその属性値の値をチェックすることができる。
+
+It supports including as complex or terse validation rules against attributes and is quite straight-forward to use.
+If the attributes provided are valid, nothing should be returned from `.validate()`, however if they are invalid a custom error can be returned instead.
+属性に対し、その複雑さに関わらずバリデーションを与えることができ、その使い方も簡単である。
+もし、設定された属性が有効な場合は、`.validate()`からは何も返されないが、もし有効でない場合はカスタム可能なエラーを返してくる。
+
+A basic example for validation can be seen below:
+基本的な例は以下の通りである:
+
+```javascript
+Photo = Backbone.Model.extend({
+    validate: function(attribs){
+        if(attribs.src == "placeholder.jpg"){
+            return "Remember to set a source for your image!";
+        }
+    },
+    
+    initialize: function(){
+        console.log('this model has been initialized');
+        this.bind("error", function(model, error){
+            console.log(error);
+        });
+    }
+});
+ 
+var myPhoto = new Photo();
+myPhoto.set({ title: "On the beach" });
+```
+
+
+###Views
+
+Views in Backbone don't contain the markup for your application, but rather they are there to support models by defining how they should be visually represented to the user. 
+This is usually achieved using JavaScript templating (e.g. Mustache, jQuery tmpl etc). When a model updates, rather than the entire page needing to be refreshed, we can simply bind a view's `render()` function to a model's `change()` event, allowing the view to always be up to date.
+BackboneのViewはアプリケーションのマークアップは含んでおらず、ユーザに対してどのように視覚的に表現されるか定義することでmodelをサポートする役目を担っている。
+これはJavaScriptテンプレーティング(Mustache, jQuery tmplなど)を用いることで達成できる。
+
+####新しいViewを作る
+
+Similar to the previous sections, creating a new view is relatively straight-forward. We simply extend `Backbone.View`.
+Here's an example of a possible implementation of this, which I'll explain shortly:
+前の節と同様に、新しいviewを作ることも比較的簡単である。`Backbone.View`をextendするだけである。
+ここでは、これに考えられうる実装例を見てみよう, 説明は後ほど: 
+
+```javascript
+var PhotoSearch = Backbone.View.extend({
+    el: $('#results'),
+    render: function( event ){
+        var compiled_template = _.template( $("#results-template").html() );
+        this.el.html( compiled_template(this.model.toJSON()) );
+        return this; //recommended as this enables calls to be chained.
+    },
+    events: {
+        "submit #searchForm":  "search",
+        "click .reset": "reset",
+        "click .advanced": "switchContext"
+    },
+    search: function( event ){
+        //executed when a form '#searchForm' has been submitted
+    },
+    reset: function( event ){
+        //executed when an element with class "reset" has been clicked.
+    },
+    //etc
+});
+```
+
+####What is `el`?
+####`el`ってなに?
+
+`el` is basically a reference to a DOM element and all views must have one, however Backbone allows you to specify this in four different ways. 
+You can either directly use an `id`, a `tagName`, `className` or if you don't state anything `el` will simply default to a plain div element without any id or class.
+Here are some quick examples of how these may be used:
+`el`とは基本的にはDOMエレメントへの参照で、すべてのviewが持たなくてはならない。しかしBackboneはこれの設定方法について4つの方法を提供している。
+`id`や`tagName`, `className`を用いるか、もし何も宣言しない場合は`el`は普通のidやclassを持たないただのdivとなる。
+どの用にそれらが使われるか簡単な例を見てみよう:
+
+```javascript
+el: $('#results')  //select based on an ID or other valid jQuery selector.
+tagName: 'li' //select based on a specific tag. Here el itself will be derived from the tagName
+className: 'items' //similar to the above, this will also result in el being derived from it
+el: '' //defaults to a div without an id, name or class.
+```
+
+**Note:** A combination of these methods can also be used to define `el`. For example:
+**注意:** これらのメソッドのコンビネーションで`el`を定義することもできる。例えば:
+
+```javascript
+tagName: "li",
+className: "container"
+```
+will use specific tags with a particular `className`.
+これは、指定したタグと特定の`className`を使う。
+
+
+**`render()`を理解する**
+
+`render()` is an optional function to define how you would like a template to be rendered.
+Backbone allows you to use any JavaScript templating solution of your choice for this but for the purposes of this book, we'll opt for Underscore's micro-templating.
+`render()`はオプショナルな関数でテンプレートがどのようにレンダされるか指定するものである。
+Backboneではどのテンプレーティングエンジンを使っても構わないが、この本の中では、Underscoreのテンプレーティングエンジンを使用したいと思う。
+
+The `_.template` method in underscore compiles JavaScript templates into functions which can be evaluated for rendering. In the above view, 
+I'm passing the markup from a template with id `results-template` to be compiled.
+Next, I set the html for `el` (our DOM element for this view) the output of processing a JSON version of the model associated with the view through the compiled template.
+Underscoreの`_.template`メソッドはJavaScriptテンプレートを関数にして、レンダリングの際に使える形にする。上のviewでは、id=`result-template`のマークアップをコンパイルされるように渡している。
+次に、`el`(このViewのDOMエレメント)のhtmlを
+
+Presto! This populates the template, giving you a data-complete set of markup in just a few short lines of code.
+このように数行のコードでデータにバインドされたマークアップを作ることができる。
+
+**The `events` attribute**
+**`events`属性**
+
+The Backbone `events` attribute allows us to attach event listeners to either custom selectors, or `el` if no selector is provided.
+An event takes the form `{"eventName selector": "callbackFunction"}` and a number of event-types are supported, including 'click', 'submit', 'mouseover', 'dblclick' and more.
+Backboneの`events`属性は指定したセレクタ、もしくは`el`そのものにイベントリスナーを付ける。イベントは`{"eventName selector": "callbackFunction"}`のフォーマットで指定され、
+'click', 'submit', 'mouseover', 'dblclick' などのイベントタイプがサポートされている。
+
+What isn't instantly obvious is that under the bonnet, Backbone uses jQuery's `.delegate()` to provide instant support for event delegation but goes a little further, 
+extending it so that `this` always refers to the current view object. The only thing to really keep in mind is 
+that any string callback supplied to the events attribute must have a corresponding function with the same name within the scope of your view
+otherwise you may incur exceptions.
+Backboneは基本的にはjQueryの`.delegate()`を使ってイベントデリゲーションをしているが、それをさらに拡張して`this`が常に現在のviewオブジェクトとなるように実装されている。
+気をつけなくてはいけないのは、`events`属性で設定された文字列のコールバックはそのviewのスコープ内で同じ名前で宣言されていなければならない。そのコールバックが存在しない場合はExceptionが投げられる。
+
+###Collections
+
+Collections are basically sets of models and can be easily created by extending `Backbone.Collection`.
+Collectionは基本的にはModelのセットで、`Backbone.Collection`をextendすることで作ることができる。
+
+Normally, when creating a collection you'll also want to pass through a property specifying the model that your collection will contain
+as well as any instance properties required.
+Collectionを作るときには、Collectionの持つModelとその他のプロパティを指定したものを渡す。
+
+In the following example, we're creating a PhotoCollection containing the Photo models we previously defined.
+次の例では、前回定義した`Photo`Modelを格納する`PhotoCollection`を定義している。
+
+```javascript
+PhotoCollection = Backbone.Collection.extend({
+    model: Photo
+});
+```
+
+**Getters and Setters**
+
+There are a few different options for retrieving a model from a collection. The most straight-forward is using `Collection.get()` which accepts a single id as follows:
+CollectionからModelを取り出す方法はいくつか用意されている。もっともわかりやすいものは`Collection.get()`であり、以下のように一つのidを受け取る:
+
+```javascript
+var skiingEpicness = PhotoCollection.get(2);
+```
+
+Sometimes you may also want to get a model based on something called the client id. This is an id that is internally assigned automatically
+when creating models that have not yet been saved, should you need to reference them.
+You can find out what a model's client id is by accessing its `.cid` property.
+client idと呼ばれるidでmodelを取り出したいときもあるかもしれない。client idとはまだsaveされていないmodelが, 生成時に自動的に割り当てられるidで、それを使って参照することも可能である。
+modelのclient idは`.cid`プロパティにアクセスすることができる。
+
+```javascript
+var mySkiingCrash = PhotoCollection.getByCid(456);
+```
+
+Backbone Collections don't have setters as such, but do support adding new models via `.add()` and removing models via `.remove()`.
+BackboneのCollectionはsetterというものを持たないが、新しいmodelを追加する場合は`.add()`を用い、削除する際は`.remove()`を用いる。
+
+```javascript
+var a = new Backbone.Model({ title: 'my vacation'}),
+    b = new Backbone.Model({ title: 'my holiday'});
+
+var photoCollection = new PhotoCollection([a,b]);
+photoCollection.remove([a,b]);
+```
+
+**イベントを監視する**
+
+As collections represent a group of items, we're also able to listen for `add` and `remove` events for when new models are added or removed from the collection.  Here's an example:
+Collectionはアイテムのまとまりであるため、modelが追加もしくは削除されたときに呼ばれる`add`や`remove`イベントを監視することができる。例はこちら:
+
+```javascript
+var PhotoCollection = new Backbone.Collection;
+PhotoCollection.bind("add", function(photo) {
+  console.log("I liked " + photo.get("title") + ' its this one, right? '  + photo.src);
+});
+ 
+PhotoCollection.add([
+  {title: "My trip to Bali", src: "bali-trip.jpg"},
+  {title: "The flight home", src: "long-flight-oofta.jpg"},
+  {title: "Uploading pix", src: "too-many-pics.jpg"}
+]);
+```
+
+In addition, we're able to bind a `change` event to listen for changes to models in the collection.
+さらに、collection内のモデルが変更された際に出される`change`イベントも同様である。
+
+```javascript
+PhotoCollection.bind("change:title", function(){
+    console.log('there have been updates made to this collections titles');    
+});
+```
+
+**Fetching models from the server**
+**サーバからModelを読み込む**
+
+`Collections.fetch()` provides you with a simple way to fetch a default set of models from the server in the form of a JSON array.
+When this data returns, the current collection will refresh.
+`Collections.fetch()`によって、JSONの配列の形でサーバからデフォルトのアイテムセットを受け取ることができる。このデータを受け取ると、現在のCollectionはrefreshされる。
+
+```javascript
+var PhotoCollection = new Backbone.Collection;
+PhotoCollection.url = '/photos';
+PhotoCollection.fetch();
+```
+
+Under the covers, `Backbone.sync` is the function called every time Backbone tries to read (or save) models to the server.
+It uses jQuery or Zepto's ajax implementations to make these RESTful requests, however this can be overridden as per your needs.
+`Backbone.sync`はBackboneがサーバから読み込んだり、セーブするときに呼ばれる関数であり、jQueryやZeptoのajaxの実装を用いてRESTfulなリクエストを行うが、 しかし、それはオーバーライドすることも可能である。
+
+In the above fetch example if we wish to log an event when `.sync()` gets called, we can simply achieve this as follows:
+上の読み込みの例で、もし`.sync()`が呼ばれる際にそのイベントをlogしたい場合は、以下のようにすることでそれが可能になる。
+
+```javascript
+Backbone.sync = function(method, model) {
+  console.log("I've been passed " + method + " with " + JSON.stringify(model));
+};
+```
+
+**Resetting/Refreshing Collections**
+**Collectionのリセットとリフレッシュ**
+Rather than adding or removing models individually, you occasionally wish to update an entire collection at once.
+`Collection.reset()` allows us to replace an entire collection with new models as follows:
+一つ一つ追加したり、削除するよりも、一度にCollection全体を更新する機会の方が多いと思う。
+`Collection.reset()`を使うことで、以下のようにコレクション全体を置き換えることができる:
+
+```javascript
+PhotoCollection.reset([
+  {title: "My trip to Scotland", src: "scotland-trip.jpg"},
+  {title: "The flight from Scotland", src: "long-flight.jpg"},
+  {title: "Latest snap of lock-ness", src: "lockness.jpg"}]);
+```
