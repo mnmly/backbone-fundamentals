@@ -912,13 +912,29 @@ but it's important to understand where these fit rather than considering client-
 公式のBackboneのドキュメンテーションは明確にRouterがMVCのCにはあたらないと説明していますが、それはクライアントサイドのMVCとサーバサイド開発のそのパターンが1:1で対応しているものではないということを理解しなくてはいけない。
 
 ####Is there a limit to the number of routers I should be using?
+#### ルータの数に制限はあるか？
+Andrew de Andrade has pointed out that DocumentCloud themselves usually only use a single controller in most of their applications.
+You're very likely to not require more than one or two routers in your own projects
+as the majority of your application routing can be kept organized in a single controller without it getting unwieldy.
+Andrade de Andrade氏はDocumentCloud自身が多くの彼らのアプリケーション一つのコントローラしか使わないことを指摘している。 多くのアプリケーションのRouterは1つか2つ以上のRouterを必要とする場合は非常に少ないため一つのコントローラで整理されている???
 
-Andrew de Andrade has pointed out that DocumentCloud themselves usually only use a single controller in most of their applications. You're very likely to not require more than one or two routers in your own projects as the majority of your application routing can be kept organized in a single controller without it getting unwieldy.
+
 
 ####Is Backbone too small for my application's needs?
 
-If you find yourself unsure of whether or not your application is too large to use Backbone, I recommend reading my post on building large-scale jQuery & JavaScript applications or reviewing my slides on client-side MVC architecture options. In both, I cover alternative solutions and my thoughts on the suitability of current MVC solutions for scaled application development.
+If you find yourself unsure of whether or not your application is too large to use Backbone, I recommend reading my post on building large-scale jQuery & JavaScript applications or reviewing my slides on client-side MVC architecture options.
+In both, I cover alternative solutions and my thoughts on the suitability of current MVC solutions for scaled application development.
+Backboneを使うにはこのアプリケーションが多きすぎるかどうか不安な場合は、私のlarge-scale jQuery & JavaScript applicationかクライアントサイドのMVCアーキテクチャのスライドを読んでもらうことをお勧めする。 どちらも、代替のソリューションや現在のスケールされたアプリケーション開発のMVCソリューションの適応性についての私の考えも述べている。
 
-Backbone can be used for building both trivial and complex applications as demonstrated by the many examples Ashkenas has been referencing in the Backbone documentation. As with any MVC framework however, it's important to dedicate time towards planning out what models and views your application really needs. Diving straight into development without doing this can result in either spaghetti code or a large refactor later on and it's best to avoid this where possible.
+Backbone can be used for building both trivial and complex applications as demonstrated by the many examples Ashkenas has been referencing in the Backbone documentation. 
+As with any MVC framework however, it's important to dedicate time towards planning out what models and views your application really needs.
+Diving straight into development without doing this can result in either spaghetti code or a large refactor later on and it's best to avoid this where possible.
+Ashkenasがドキュメンテーションで参照しているようにBackboneを用いることで、小規模と大規模の両方のアプリケーションを構築することができる。
+どのMVCフレームワークでも言えることだが、どのようなmodelとviewがこのアプリケーションに必要かというプランニングは非常に重要である。
+無計画ですぐに開発を始めてしまうと、スパゲッティコードになったり、後ほど大規模なリファクタリングが必要になってしまうなど問題が生じるため、この可能性を回避することは賢明だといえる。
 
-At the end of the day, the key to building large applications is not to build large applications in the first place. If you however find Backbone doesn't cut it for your requirements I strongly recommend checking out JavaScriptMVC or SproutCore as these both offer a little more than Backbone out of the box. Dojo and Dojo Mobile may also be of interest as these have also been used to build significantly complex apps by other developers.
+At the end of the day, the key to building large applications is not to build large applications in the first place. If you however find Backbone doesn't cut it for your requirements I strongly recommend checking out JavaScriptMVC or SproutCore as these both offer a little more than Backbone out of the box. 
+Dojo and Dojo Mobile may also be of interest as these have also been used to build significantly complex apps by other developers.
+最終的には、大規模なアプリケーションを構築する上で大切なことは、最初から大規模なものを作ろうとしないことである。
+もしBackboneがあなたの用件に合わなかった場合は、JavaScriptMVCやSproutCoreをチェックすることをお勧めする。両方のフレームワークはともにBackboneより多くの機能を初期段階から提供してくれる。
+DojoとDojo Mobileも、他のデベロッパによって多くの複雑なアプリケーションを構築するのに使用されているため、選択肢としておいておくのもいいかもしれない。
