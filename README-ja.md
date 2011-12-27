@@ -998,3 +998,327 @@ I've previously written [a detailed article](http://addyosmani.com/writing-modul
 The takeaway is that although it's perfectly fine to develop applications without a script loader or clean module format in place, it can be of significant benefit to consider using these tools in your application development.
 スクリプトローダや明確なモジュールフォーマットを持たずにアプリケーションを開発するのは一向に構わないが、これらのツールを使うことはアプリケーション開発を有利に進めることができる。
 
+
+###Writing AMD modules with RequireJS
+
+As discussed above, the overall goal for the AMD format is to provide a solution for modular JavaScript that developers can use today. The two key concepts you need to be aware of when using it with a script-loader are a `define()` method for facilitating module definition and a `require()` method for handling dependency loading. `define()` is used to define named or unnamed modules based on the proposal using the following signature:
+上述のように、AMDのフォーマットのための総合的な目標は、開発者が今から使用できるモジュラーJavaScriptのソリューションを提供することです。スクリプトローダーを使用する際に注意しなくてはならない2つの重要な概念は、モジュールの定義のための`define()`メソッドと依存関係のロードを処理するための`require()`メソッドの二つです。`define()`は以下のような書き方に基づいて、名前付きまたは名前なしのモジュールを定義するために使用されます。
+
+```javascript
+define(
+    module_id /*optional*/, 
+    [dependencies] /*optional*/, 
+    definition function /*function for instantiating the module or object*/
+);
+```
+
+As you can tell by the inline comments, the `module_id` is an optional argument which is typically only required when non-AMD concatenation tools are being used (there may be some other edge cases where it's useful too). When this argument is left out, we call the module 'anonymous'. When working with anonymous modules, the idea of a module's identity is DRY, making it trivial to avoid duplication of filenames and code.
+インラインコメントによってお分かりのように、`module_idは`は通常、非AMD連結ツールが使用されているとき(もしくはその他の便利などのエッジケース)に必要とされるオプションの引数です。この引数が省略された場合、このモジュールは"anonymous(匿名)"であると言います。匿名のモジュールを用いる場合、モジュールのIDのアイデアは、ファイル名とコードの重複を避けるために小さなものとするためにDRYであると言える。???
+
+Back to the define signature, the dependencies argument represents an array of dependencies which are required by the module you are defining and the third argument ('definition function') is a function that's executed to instantiate your module. A barebone module (compatible with RequireJS) could be defined using `define()` as follows:
+`define`の書き方に戻ると、依存関係の引数は、あなたが定義しているモジュールに必要な依存関係の配列を受け取ります。そして3つめの引数("定義関数")は、モジュールをインスタンス化するために実行される関数です。モジュール(RequireJSと互換性がある)の骨組みは`define()`を用いて次の通りに定義することができます。
+
+```javascript
+// A module ID has been omitted here to make the module anonymous
+
+define(['foo', 'bar'], 
+    // module definition function
+    // dependencies (foo and bar) are mapped to function parameters
+    function ( foo, bar ) {
+        // return a value that defines the module export
+        // (i.e the functionality we want to expose for consumption)
+    
+        // create your module here
+        var myModule = {
+            doStuff:function(){
+                console.log('Yay! Stuff');
+            }
+        }
+
+        return myModule;
+});
+
+####もう一つの書き方
+There is also a [sugared version](http://requirejs.org/docs/whyamd.html#sugar) of `define()` available that allows you to declare your dependencies as local variables using `require()`. This will feel familiar to anyone who's used node, and can be easier to add or remove dependencies.
+[シュガーシンタックスバージョン](http://requirejs.org/docs/whyamd.html#sugar)の`define()`の書き方も存在し、その場合、依存関係を`require()`を用いてローカル変数として宣言することもできます。これは[node](http://nodejs.org)を使ったことがある人であれば馴染みかもしれませんし、依存関係の削除も追加も容易です。
+Here is the previous snippet using the alternate syntax:
+これが、そのもう一つの書き方です:
+
+
+```javascript
+// A module ID has been omitted here to make the module anonymous
+
+define(function(require){
+        // module definition function
+    // dependencies (foo and bar) are defined as local vars
+    var foo = require('foo'),
+        bar = require('bar');
+        
+        // return a value that defines the module export
+        // (i.e the functionality we want to expose for consumption)
+    
+        // create your module here
+        var myModule = {
+            doStuff:function(){
+                console.log('Yay! Stuff');
+            }
+        }
+
+        return myModule;
+});
+```
+
+The `require()` method is typically used to load code in a top-level JavaScript file or within a module should you wish to dynamically fetch dependencies. An example of its usage is:
+あなたが動的に依存関係を読み取りたい場合、メソッドは、通常、トップレベルのJavaScriptファイルまたはモジュール内のコードを読み込むために使用されます。その使い方の例は、次のとおりです。
+
+```javascript
+// Consider 'foo' and 'bar' are two external modules
+// In this example, the 'exports' from the two modules loaded are passed as
+// function arguments to the callback (foo and bar)
+// so that they can similarly be accessed
+
+require(['foo', 'bar'], function ( foo, bar ) {
+        // rest of your code here
+        foo.doSomething();
+});
+```
+
+
+**Wrapping modules, views and other components with AMD**
+***モジュール・View・その他のコンポーネントをAMDでラップする***
+
+Now that we've taken a look at how to define AMD modules, let's review how to go about wrapping components like views and collections so that they can also be easily loaded as dependencies for any parts of your application that require them. At it's simplest, a Backbone model may just require Backbone and Underscore.js. These are considered it's dependencies and so, to write an AMD model module, we would simply do this:
+さてAMDのモジュールを定義する方法を見てきたので、次は、ViewやCollectionなどのコンポーネントを、それらを必要とするアプリケーションの依存関係として読み込めるように、ラップする方法を検討してみよう。最も単純に捉えると、BackboneのModelは、単にBackboneとUnderscore.jsのみが必要となってきますので、これらはその依存関係と見なされます。AMD Modelのモジュールを書き方は単純に以下の通りです:
+
+```javascript
+define(['underscore', 'backbone'], function(_, Backbone) {
+  var myModel = Backbone.Model.extend({
+
+    // Default attributes 
+    defaults: {
+      content: "hello world",
+    },
+
+    // A dummy initialization method
+    initialize: function() {
+      if (!this.get("content")) {
+        this.set({"content": this.defaults.content});
+      }
+    },
+
+    clear: function() {
+      this.destroy();
+      this.view.remove();
+    }
+
+  });
+  return myModel;
+});
+```
+
+Note how we alias Underscore.js's instance to `_` and Backbone to just `Backbone`, making it very trivial to convert non-AMD code over to using this module format. For a view which might require other dependencies such as jQuery, this can similarly be done as follows:
+Underscore.jsのインスタンスを`_`へ、Backboneを`Backbone`というようにエイリアスを作って、この非AMDコードをモジュールフォーマットに変換??? jQueryなどのような他の依存関係を要するViewも次のようにかけます:
+
+```javascript
+define([
+  'jquery',
+  'underscore', 
+  'backbone',
+  'collections/mycollection',
+  'views/myview'
+  ], function($, _, Backbone, myCollection, myView){
+
+  var AppView = Backbone.View.extend({
+  ...
+```
+
+Aliasing to the dollar-sign (`$`), once again makes it very easy to encapsulate any part of an application you wish using AMD.
+`$`にエイリアスを当てることで、アプリケーションのどの要素もこのAMDを使うことでカプセル化することが容易になります。
+
+
+##External [Underscore/Handlebars/Mustache] templates using RequireJS
+##外部テンプレート[Underscore/Handlebars/Mustache]をRequireJSと使う場合
+
+Moving your [Underscore/Mustache/Handlebars] templates to external files is actually quite straight-forward. As this application makes use of RequireJS, I'll discuss how to implement external templates using this specific script loader.
+[Underscore/Mustache/Handlebars]などのテンプレートファイルを外部に移すのも非常に簡単です。このアプリケーションはRequireJSを利用するので、この特定のスクリプトローダを使用して外部テンプレートを実装する方法について説明します。
+
+RequireJS has a special plugin called text.js which is used to load in text file dependencies. To use the text plugin, simply follow these simple steps:
+RequireJSには、テキストファイルの依存関係をロードするために使用できるtext.jsと呼ばれる特別なプラグインがあります。テキストプラグインを使用するには、以下の簡単なステップに従ってください。
+
+1. Download the plugin from http://requirejs.org/docs/download.html#text and place it in either the same directory as your application's main JS file or a suitable sub-directory.
+1. [text.js]( http://requirejs.org/docs/download.html#text )プラグインをダウンロードして、アプリケーションのメインのJSファイルまたは適切なサブディレクトリと同じディレクトリに配置してください。
+
+2. Next, include the text.js plugin in your initial RequireJS configuration options. In the code snippet below, we assume that RequireJS is being included in our page prior to this code snippet being executed. Any of the other scripts being loaded are just there for the sake of example.
+2. RequireJSの設定オプションにtext.jsプラグインを追加します。下のコードのように、RequireJSがこの設定オプションより上で読み込まれていることを前提としています。以下のコードでは例のために他のスクリプトも読み込んであります。
+
+ 
+```javascript
+require.config( {
+    paths: {
+        'backbone':         'libs/AMDbackbone-0.5.3',
+        'underscore':       'libs/underscore-1.2.2',
+        'text':             'libs/require/text',
+        'jquery':           'libs/jQuery-1.7.1',
+        'json2':            'libs/json2',
+        'datepicker':       'libs/jQuery.ui.datepicker',
+        'datepickermobile': 'libs/jquery.ui.datepicker.mobile',
+        'jquerymobile':     'libs/jquery.mobile-1.0'
+    },
+    baseUrl: 'app'
+} );
+```
+
+3. When the `text!` prefix is used for a dependency, RequireJS will automatically load the text plugin and treat the dependency as a text resource. A typical example of this in action may look like..
+3. `text!`接頭辞が依存ファイルに使用された場合、RequireJSは自動的にテキストのプラグインをロードし、テキストリソースとして依存関係を扱います。この典型的な例は次のようになります:
+
+```javascript
+require(['js/app', 'text!templates/mainView.html'],
+    function(app, mainView){
+        // the contents of the mainView file will be
+        // loaded into mainView for usage.
+    }
+);
+```
+
+4. Finally we can use the text resource that's been loaded for templating purposes. You're probably used to storing your HTML templates inline using a script with a specific identifier.
+4. そしてテンプレート用にロードされたテキストのリソースを使用することができるようになります。以前まではおそらく、HTMLに特定のidで埋め込んでいたと思います。
+
+With Underscore.js's micro-templating (and jQuery) this would typically be:
+Underscore.jsのテンプレートエンジンとjQueryでは以下のようになります:
+
+HTML:
+
+```html
+<script type="text/template" id="mainViewTemplate">
+    <% _.each( person, function( person_item ){ %>
+        <li><%= person_item.get("name") %></li>  
+    <% }); %>
+</script>
+```
+
+JS:
+
+```javascript
+var compiled_template = _.template( $('#mainViewTemplate').html() );
+```
+
+With RequireJS and the text plugin however, it's as simple as saving your template into an external text file (say, `mainView.html`) and doing the following:
+RequireJSとtextプラグインで、複数のテンプレートファイルを一つのファイル(例えば`mainView.html`)にまとめることも可能です:
+
+```javascript
+require(['js/app', 'text!templates/mainView.html'],
+    function(app, mainView){
+        
+        var compiled_template = _.template( mainView );
+    }
+);
+```
+
+That's it!. You can then go applying your template to a view in Backbone doing something like:
+これだけです! これが終わったので、次は以下のようにBackboneのViewにテンプレートをあてるだけです:
+
+```javascript
+collection.someview.el.html( compiled_template( { results: collection.models } ) );
+```
+
+
+All templating solutions will have their own custom methods for handling template compilation, but if you understand the above, substituting Underscore's micro-templating for any other solution should be fairly trivial.
+すべてのテンプレートエンジンはそのコンパイルを処理するために独自のカスタムメソッドを持っていますが、上記をきちんと理解していれば、ほかのテンプレーティングエンジンとの置き換えは非常に簡単なはずです。
+
+**Note:** You may also be interested in looking at [Require.js tpl](https://github.com/ZeeAgency/requirejs-tpl). It's an AMD-compatible version of the Underscore templating system that also includes support for optimization (pre-compiled templates) which can lead to better performance and no evals. I have yet to use it myself, but it comes as a recommended resource.
+**ノート** もしかすると[Require.js tpl](https://github.com/ZeeAgency/requirejs-tpl)もいい選択肢かもしれないです。これはAMDと互換性があるUnderscoreのテンプレーティングシステムでevalフリーでかつより高いパフォーマンスに最適化できるようにもなっています。まだ私自身は使ったことはありませんが、推奨できるオプションだと思います。
+
+
+##Optimizing Backbone apps for production with the RequireJS Optimizer
+
+As experienced developers may know, an essential final step when writing both small and large JavaScript web applications is the build process.  The majority of non-trivial apps are likely to consist of more than one or two scripts and so optimizing, minimizing and concatenating your scripts prior to pushing them to production will require your users to download a reduced number (if not just one) script file.
+経験豊かなデベロッパであれば知っているかもしれませんが、小規模および大規模なJavaScript Webアプリケーションを構築する上での大切な最後のステップは、そのビルドプロセスです。大規模アプリケーションは多くの場合、複数のスクリプトを含んでいるため、プロダクションにプッシュする前に、ページが読み込まなくてはならないスクリプトの数を減らすため、最適化、最小化やファイルの連結が必要になってきます。
+
+Note: If you haven't looked at build processes before and this is your first time hearing about them, you might find [my post and screencast on this topic](http://addyosmani.com/blog/client-side-build-process/) useful.
+ノート: これまでにビルドプロセスを無いという方には、またはそれらの話を聞くのが初めての方々にはこのトピックに関連して私が以前書いた[記事とスクリーンキャスト]( http://addyosmani.com/blog/client-side-build )が役に立つかもしれません。
+
+With some other structural JavaScript frameworks, my recommendation would normally be to implicitly use YUI Compressor or Google's closure compiler tools, but we have a slightly more elegant when it comes to Backbone if you're using RequireJS. RequireJS has a command line optimization tool called r.js which has a number of capabilities, including:
+私は大抵YUI CompressorかGoogleのClosureコンパイラツールを進めますが、RequireJSとBackboneを使っている場合は、より良いオプションが存在します。RequireJSには`r.js`と呼ばれるコマンドラインの最適化ツールがあります。それには以下の利点が含まれます:
+
+* Concatenating specific scripts and minifiying them using external tools such as UglifyJS (which is used by default) or Google's Closure Compiler for optimal browser delivery, whilst preserving the ability to dynamically load modules
+* スクリプトの読み込み時間を最適化するために、UglifyJS(デフォルト)やGoogleのClosureコンパイラなどを使って特定のファイルを連結/縮小化することができますが、一方で動的にモジュールを読み込むことも可能です。
+* Optimizing CSS and stylesheets by inlining CSS files imported using @import, stripping out comments etc.
+* `@import`で読み込まれているCSSを一つのファイルにまとめたりコメントを省いたりしてくれます
+* The ability to run AMD projects in both Node and Rhino (more on this later)
+* AMDプロジェクトをNodeとRhinoで動かすこともできます。(後ほど詳しく)
+
+You'll notice that I mentioned the word 'specific' in the first bullet point. The RequireJS optimizer only concatenates module scripts that have been specified in arrays of string literals passed to top-level (i.e non-local) require and define calls. As clarified by the [optimizer docs](http://requirejs.org/docs/optimization.html) this means that Backbone modules defined like this:
+最初の箇条書きで'特定の'と書いたことにお気づきだと思いますが、RequireJSの最適化ツールはトップレベルで渡された配列で指定されたモジュールしか最適化を行いません。[最適化ツールのドキュメンテーション](http://requirejs.org/docs/optimization.html)で書かれているように、Backboneのモジュールは以下のように定義できます:
+
+```javascript
+define(['jquery','backbone','underscore', collections/sample','views/test'], 
+    function($,Backbone, _, Sample, Test){
+        //...
+    });
+```
+
+will combine fine, however inline dependencies such as:
+これらはきちんと統合されますが、以下のようにインラインで書かれている依存関係の場合:
+
+```javascript
+var models = someCondition ? ['models/ab','models/ac'] : ['models/ba','models/bc'];
+```
+
+will be ignored. This is by design as it ensures that dynamic dependency/module loading can still take place even after optimization. 
+これらは最適化からは取り除かれます。なぜならこのような動的に読み込まれた依存関係・モジュールは最適化の後でもその通り読み込まれないといけないからである。
+
+Although the RequireJS optimizer works fine in both Node and Java environments, it's strongly recommended to run it under Node as it executes significantly faster there. In my experience, it's a piece of cake to get setup with either environment, so go for whichever you feel most comfortable with. 
+RequireJSオプティマイザはNodeとJavaのどちらの環境でも実行することは可能ですが、Nodeの方がはるかに早く実行されるのでそちらの方が推奨されています。私の経験では、走らせること自体はどちらの環境でも簡単なので、好みの環境で行っていただいたらいいと思います。
+
+To get started with r.js, grab it from the [RequireJS download page](http://requirejs.org/docs/download.html#rjs) or [through NPM](http://requirejs.org/docs/optimization.html#download). Now, the RequireJS optimizer works absolutely fine for single script and CSS files, but for most cases you'll want to actually optimize an entire Backbone project. You *could* do this completely from the command-line, but a cleaner option is using build profiles.
+
+`r.js`を始めるには、[RequireJSのダウンロードページ](http://requirejs.org/docs/download.html#rjs) もしくは[npm](http://requirejs.org/docs/optimization.html#download)から落としてきてください。今のところRequireJSオプティマイザはスクリプトファイルとCSSファイルに対してはきちんと動作していますが、あなたの場合はBackboneのプロジェクト全体を最適化したいと考えていると思います。コマンドラインからすべて行うことも可能ではありますが、すっきりしたやり方はビルドプロファイルを作る方法です。
+
+Below is an example of a build file taken from the modular jQuery Mobile app referenced later in this book. A **build profile** (commonly named `app.build.js`) informs RequireJS to copy all of the content of `appDir` to a directory defined by `dir` (in this case `../release`). This will apply all of the necessary optimizations inside the release folder. The `baseUrl` is used to resolve the paths for your modules. It should ideally be relative to `appDir`.
+本書の後半で作っていくモジュール型jQueryのモバイルアプリの場合のビルドファイルの例です。**ビルドプロファイル**(一般的なファイル名は`app.build.js`)で定義されたディレクトリ`dir`(この場合は`../release`)に`appDir`の内容のすべてをコピーするようにRequireJSに伝えます。これで、リリースのフォルダ内にこのプロジェクトに必要なすべてのファイルに最適化を適用します。`baseUrl`でモジュールへのパスを指定するのですが、理想的には`appDir`に相対的なパスであることが望ましいです。
+
+Near the bottom of this sample file, you'll see an array called `modules`. This is where you specify the module names you wish to have optimized. In this case we're optimizing the main application called 'app', which maps to `appDir/app.js`. If we had set the `baseUrl` to 'scripts', it would be mapped to `appDir/scripts/app.js`.
+[ この ]サンプルファイルの下の方で、`modules`と呼ばれる配列を見かけると思います。これが最適化したいモジュール名を指定するところとなります。このケースでは`appDir/app.js`にマッピングされた`app`と呼ばれるメインアプリケーションを最適化しています。もし`baseUrl`を`scripts`に指定していたら、`app`は`appDir/scripts/app.js`にマップされます。
+
+```javascript
+({
+    appDir: "./",
+    baseUrl: "./",
+    dir: "../release",
+    paths: {
+       'backbone':          'libs/AMDbackbone-0.5.3',
+        'underscore':       'libs/underscore-1.2.2',
+        'jquery':           'libs/jQuery-1.7.1',
+        'json2':            'libs/json2',
+        'datepicker':       'libs/jQuery.ui.datepicker',
+        'datepickermobile': 'libs/jquery.ui.datepicker.mobile',
+        'jquerymobile':     'libs/jquery.mobile-1.0'
+    },
+    optimize: "uglify",
+    modules: [
+        {
+            name: "app",
+            exclude: [
+                // If you prefer not to include certain libs exclude them here
+            ]
+        }
+    ]
+})
+```
+
+The way the build system in r.js works is that it traverses app.js (whatever modules you've passed) and resolved dependencies, concatenating them into the final `release`(dir) folder. CSS is treated the same way.
+`r.js`がどのように動いているのかというと、まずapp.js(その他にあなたが指定したモジュール)を読み込み、依存関係を明確にして、それらを連結して最終的に`release`ディレクトリに配置されます。CSSも同様です。
+
+The build profile is usually placed inside the 'scripts' or 'js' directory of your project. As per the docs, this file can however exist anywhere you wish, but you'll need to edit the contents of your build profile accordingly. 
+このビルドプロファイルは、通常プロジェクトディレクトリの"script"や"js"に配置されます。ドキュメントに従えば、このファイル好みにあわせて任意の場所に配置できますが、それに応じてビルドプロファイルの内容を編集する必要があります。
+
+Finally, to run the build, execute the following command once insice your `appDir` or `appDir/scripts` directory:
+最終的に、`appDir`内もしくは`appDir/scripts`内で以下のコマンドを打つことで、ビルドを実行します:
+
+```javascript
+node ../../r.js -o app.build.js
+```
+
+That's it. As long as you have UglifyJS/Closure tools setup correctly, r.js should be able to easily optimize your entire Backbone project in just a few key-strokes. If you would like to learn more about build profiles, James Burke has a [heavily commented sample file](https://github.com/jrburke/r.js/blob/master/build/example.build.js) with all the possible options available.
+これでおしまいです。UglifyJS/Closureツールが正しくセットアップされている限り、r.jsはほんの少しのタイピングでBackboneプロジェクト全体を最適化することができます。ビルドプロファイルについてもっと知りたい方は、James Burkeがすべてのオプションを含めて[細かくコメントが加えられたサンプルファイル](https://github.com/jrburke/r.js/blob/master/build/example.build.js)を公開しているのでそちらを参照していただきたい。
+
