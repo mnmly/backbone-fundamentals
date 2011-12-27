@@ -963,18 +963,38 @@ In this next part of the book, we're going to look at how to use AMD modules and
 次のパートでは、AMDモジュールの使い方やRequireJSを使ってどのようにアプリケーションを管理しやすいモジュールにまとめるかを解説していきたいとおもう。
 
 
-##Organizing modules with RequireJS and AMD
+##RequireJSとAMDとのモジュールを整理する
 
-In case you haven't used it before, RequireJS is a popular script loader written by James Burke - a developer who has been quite instrumental in helping shape the AMD module format, which we'll discuss more shortly. Some of RequireJS's capabilities include helping to load multiple script files, helping define modules with or without dependencies and loading in non-script dependencies such as text files.
+In case you haven't used it before, RequireJS is a popular script loader written by James Burke - a developer who has been quite instrumental in helping shape the AMD module format, which we'll discuss more shortly.
+Some of RequireJS's capabilities include helping to load multiple script files, helping define modules with or without dependencies and loading in non-script dependencies such as text files.
+RequireJSを使ったことの無い方の為に少し説明すると、RequireJSとはAMDモジュールフォーマットの設計に重要な役割を果たしているデベロッパであるJames Burkeによって書かれたよく使われているスクリプトローダである。
+複数のスクリプトファイルを読み込んだりする機能や、依存関係の有無でモジュールを定義するのを援助する機能や、テキストのようなスクリプト以外の依存ファイルを読み込んだりできる機能を提供する。
 
 So, why use RequireJS with Backbone? Although Backbone is excellent when it comes to providing a sanitary structure to your applications, there are a few key areas where some additional help could be used:
+では、なぜBackboneとRequireJSを使うのか? Backboneはアプリケーション構造を提供してくれる点ではすばらしいが、いくつかの点で改善が期待される:
 
 1) Backbone doesn't endorse a particular approach to modular-development. Although this means it's quite open-ended for developers to opt for classical patterns like the module-pattern or Object Literals for structuring their apps (which both work fine), it also means developers aren't sure of what works best when other concerns come into play, such as dependency management.
+1) Backboneはモジュラー開発においての特定のアプローチを持っている訳ではない。つまりアプリケーションを構造パターンとしてモジュールパターンやオブジェクトリテラルなどの典型的なものを選ぶ自由をデベロッパに与えている訳ではあるが、同時にデベロッパは依存関係管理などにおいて???
 
-RequireJS is compatible with the AMD (Asynchronous Module Definition) format, a format which was born from a desire to write something better than the 'write lots of script tags with implicit dependencies and manage them manually' approach to development. In addition to allowing you to clearly declare dependencies, AMD works well in the browser, supports string IDs for dependencies, declaring multiple modules in the same file and gives you easy-to-use tools to avoid polluting the global namespace.
+RequireJS is compatible with the AMD (Asynchronous Module Definition) format, a format which was born from a desire to write something better than the 'write lots of script tags with implicit dependencies and manage them manually' approach to development.
+In addition to allowing you to clearly declare dependencies, AMD works well in the browser,
+supports string IDs for dependencies,
+declaring multiple modules in the same file and gives you easy-to-use tools to avoid polluting the global namespace.
+RequireJSは、AMD（非同期モジュール定義）形式と互換性があり、そのAMD形式は、"たくさんのスクリプトタグを書いて、暗黙の依存関係を一つ一つ管理する方法"よりも、ベターな書き方をしたいという願望から生まれた形式である。
+明確に依存関係を宣言できるようになるだけでなく、AMDはブラウザでも機能し、依存関係のための文字列IDをサポートし、一つのファイルで複数のモジュールを宣言することができ、グローバル名前空間を散らかさないためのツールも提供してくれる。
 
-2) Let's discuss dependency management a little more as it can actually be quite challenging to get right if you're doing it by hand. When we write modules in JavaScript, we ideally want to be able to handle the reuse of code units intelligently and sometimes this will mean pulling in other modules at run-time whilst at other times you may want to do this dynamically to avoid a large pay-load when the user first hits your application.
+2) Let's discuss dependency management a little more as it can actually be quite challenging to get right if you're doing it by hand.
+When we write modules in JavaScript, we ideally want to be able to handle the reuse of code units intelligently and sometimes this will mean pulling in other modules at run-time 
+whilst at other times you may want to do this dynamically to avoid a large pay-load when the user first hits your application.
+2) 正しく手で書いていくのはとても難しくなってくるため、依存関係の管理についてもう少し話してみよう。
+JavaScriptでモジュールを書く際に、理想的には賢くコード単位を再利用できるような処理をしたいし、時にはランタイムで他のモジュールを読み込みたいときもあるかもしれないし、またあるときは最初のページのロード量を減らすために動的にこれを行いたいときもあるかもしれない。
 
-Think about the GMail web-client for a moment. When users initially load up the page on their first visit, Google can simply hide widgets such as the chat module until a user has indicated (by clicking 'expand') that they wish to use it. Through dynamic dependency loading, Google could load up the chat module only then, rather than forcing all users to load it when the page first initializes. This can improve performance and load times and can definitely prove useful when building larger applications.
+Think about the GMail web-client for a moment. When users initially load up the page on their first visit, Google can simply hide widgets such as the chat module until a user has indicated (by clicking 'expand') that they wish to use it. Through dynamic dependency loading, Google could load up the chat module only then, rather than forcing all users to load it when the page first initializes.
+This can improve performance and load times and can definitely prove useful when building larger applications.
+Gmailのwebクライアントを少し考えてみよう。初めてユーザがページにアクセスする際、例えば、ユーザがチャットを使いたいという意思を示す("開く"をクリックするなど)まで、そのチャットモジュールは隠されています。全ユーザに強制的にすべてのスクリプトを読み込ませるのではなく、ダイナミックな読み込みによって、Googleはその意思が示されたときにだけチャットモジュールを読み込む。
+これによってパフォーマンスもロード時間も改善することができ、大規模なアプリケーションを構築する際にとても便利になってくる。
+I've previously written [a detailed article](http://addyosmani.com/writing-modular-js) covering both AMD and other module formats and script loaders in case you'd like to explore this topic further. 
+もしこのトピックについて深く知りたい場合は、AMDやその他のモジュールフォーマットについてやその他のスクリプトローダなどについて書いている[こちらの記事](http://addyosmani.com/writing-modular-js)を読んでいただくと良い。
+The takeaway is that although it's perfectly fine to develop applications without a script loader or clean module format in place, it can be of significant benefit to consider using these tools in your application development.
+スクリプトローダや明確なモジュールフォーマットを持たずにアプリケーションを開発するのは一向に構わないが、これらのツールを使うことはアプリケーション開発を有利に進めることができる。
 
-I've previously written [a detailed article](http://addyosmani.com/writing-modular-js) covering both AMD and other module formats and script loaders in case you'd like to explore this topic further. The takeaway is that although it's perfectly fine to develop applications without a script loader or clean module format in place, it can be of significant benefit to consider using these tools in your application development.
